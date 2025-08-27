@@ -1,21 +1,66 @@
 "use client";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
   const [isRegister, setIsRegister] = useState(false);
 
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     if (isRegister) {
-      console.log("Register Data:", data);
+      try {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        console.log(result);
+
+        if (result.success) {
+          router.push("/user-form");
+        } else {
+          setError("root.serverError", {
+            message: "User already exists",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     } else {
-      console.log("Login Data:", data);
+      try {
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+        console.log(result);
+
+        if (result.success) {
+          router.push("/dashboard");
+        } else {
+          setError("root.serverError", {
+            message: "Invalid email or password",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -31,7 +76,7 @@ const LoginForm = () => {
             {isRegister ? "Register" : "Sign In"}
           </h2>
 
-          <div className="space-y-6">
+          <div className="space-y-6 my-5">
             {isRegister && (
               <div>
                 <label className="text-sm text-gray-700 font-medium mb-2 block">
@@ -53,7 +98,6 @@ const LoginForm = () => {
                 Email
               </label>
               <input
-                type="email"
                 {...register("email", { required: true })}
                 className="bg-gray-50 w-full text-sm text-gray-800 px-4 py-3 rounded-md border border-gray-300 focus:border-[#02572d] focus:bg-white transition"
                 placeholder="Enter Email"
@@ -106,13 +150,22 @@ const LoginForm = () => {
               </div>
             )}
           </div>
-
-          <div className="!mt-12">
+          {errors.root?.serverError && (
+            <p className="text-red-500 text-center mt-2">
+              {errors.root.serverError.message}
+            </p>
+          )}
+          <div className="!mt-8">
             <button
               type="submit"
-              className="w-full px-5 py-2.5 text-sm font-medium text-white bg-[#02572d] rounded-lg hover:bg-[#67305e] focus:outline-none focus:ring-4 focus:ring-blue-300 transition"
+              disabled={isSubmitting}
+              className="w-full px-5 py-2.5 text-sm font-medium text-white bg-[#02572d] rounded-lg hover:bg-[#67305e] focus:outline-none hover:cursor-pointer transition"
             >
-              {isRegister ? "Register" : "Sign In"}
+              {isSubmitting
+                ? "Submitting..."
+                : isRegister
+                ? "Register"
+                : "Sign In"}
             </button>
           </div>
 
@@ -127,7 +180,7 @@ const LoginForm = () => {
               {isRegister ? "Already registered?" : "New to the site?"}{" "}
               <button
                 type="button"
-                className="text-blue-600 hover:text-blue-800 transition font-medium"
+                className="text-blue-600 hover:text-blue-800 transition font-medium hover:cursor-pointer"
                 onClick={() => setIsRegister(!isRegister)}
               >
                 {isRegister ? "Sign In" : "Register here"}

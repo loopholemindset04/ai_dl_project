@@ -7,7 +7,7 @@ const FormNavbar = () => {
 
   const toggleMenu = () => setIsOpen(!IsOpen);
 
-  console.log(step);
+  // console.log(step);
 
   return (
     <>

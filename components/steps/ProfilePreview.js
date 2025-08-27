@@ -1,7 +1,14 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 
-const ProfilePreview = ({ data }) => {
+const ProfilePreview = ({ data, submitData }) => {
   const { personal, skills, experience, projects } = data;
+
+  const router = useRouter();
+
+  const handleProceed = () => {
+    router.push("/dashboard");
+  };
 
   const renderSection = (title, content, data) => {
     const hasData = Array.isArray(data)
@@ -101,6 +108,14 @@ const ProfilePreview = ({ data }) => {
           </div>,
           projects
         )}
+      </div>
+      <div className="flex justify-center p-2 m-10">
+        <button
+          onClick={submitData}
+          className="bg-[#02572d] text-white py-2 p-4 rounded-lg"
+        >
+          Proceed
+        </button>
       </div>
     </div>
   );

@@ -7,11 +7,13 @@ import ProjectStep from "@/components/steps/ProjectStep";
 import React, { createContext, useState } from "react";
 import FormNavbar from "@/components/FormNavbar";
 import ProfilePreview from "@/components/steps/ProfilePreview";
+import { useRouter } from "next/navigation";
 
 const stepContext = createContext();
 
 const UserProfile = () => {
   const [step, setStep] = useState(1);
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     personal: {},
@@ -19,6 +21,26 @@ const UserProfile = () => {
     experience: [],
     projects: [],
   });
+
+  const submitData = async () => {
+    try {
+      const response = await fetch("api/fetch_user_data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      console.log(result);
+      if (result.acknowledged) {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const nextStep = () => setStep((s) => s + 1);
   const prevStep = () => setStep((s) => s - 1);
@@ -74,7 +96,7 @@ const UserProfile = () => {
 
         return (
           <div>
-            <ProfilePreview data={formData} />
+            <ProfilePreview data={formData} submitData={submitData} />
           </div>
         );
     }
